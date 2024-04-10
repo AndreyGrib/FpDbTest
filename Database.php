@@ -50,7 +50,7 @@ class Database implements DatabaseInterface
 				    $arg = (int) $arg;
 			    }
 			    else if($t == 'string'){
-				    $arg = "'$arg'";
+				    $arg = "'"  . $this->mysqli->escape_string($arg) . "'";
 			    }
 			    else if($t == 'null'){
 				    $arg = 'NULL';
@@ -99,14 +99,17 @@ class Database implements DatabaseInterface
 				});
 				if(!array_is_list($arg)){
 					array_walk($arg, function (&$v, $k){
-						$v = "`$k` = $v";
+						$v = "`" . str_replace('`', '``', $k) . "` = $v";
 					});
 				}
 				$arg = implode(', ', $arg);
 			}
 			else if(isset($placeholder['ident'])){
 				$arg = (array) $arg;
-				$arg = '`' . implode('`, `', $arg) . '`';
+				array_walk($arg, function (&$v){
+					$v = "`" . str_replace('`', '``', $v) . "`";
+				});
+				$arg = implode(', ', $arg);
 			}
 		    $args[$i] = $arg;
 	    }
